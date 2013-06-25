@@ -49,3 +49,25 @@ def pull():
 	with hide('running'):
 		print("Pulling files from remote repository")
 		local("git pull origin master")
+
+def retag():
+	"""
+	"Retags" the repository, meaning that the current codebase becomes 1.0.0
+	Based on code from http://nathanhoad.net/how-to-delete-a-remote-git-tag
+	"""
+	version = prompt("Enter tag:")
+	_retag(version)
+
+
+def _retag(version=0):	
+	with hide('running'):
+		if version > '':
+			print("Retagging repository as %s"  % version)
+			local("git tag -d %s"  % version, capture=False)
+			local("git push origin :refs/tags/%s"  % version, capture=False)
+			local("git tag %s"  % version, capture=False)
+			local("git push origin %s"  % version, capture=False)
+		else:
+			print("Pleas specify the version to retag as.");
+
+	

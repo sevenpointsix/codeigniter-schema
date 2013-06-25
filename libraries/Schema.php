@@ -45,14 +45,15 @@ class Schema {
 	 * FACTORY API
 	 * ------------------------------------------------------------ */
     
-    static public function create_table($table_name, $callback) {
+    static public function create_table($table_name, $callback, $if_not_exists = true) {
+        // Updated in version 0.3.0 to add the if_not_exists parameter, as per the native CI database forge
         $table_definition = new Schema_Table_Definition($table_name);
         
         if ($callback === FALSE) {
             return $table_definition;
         } else {
             $callback($table_definition);
-            $table_definition->create_table();
+            $table_definition->create_table($if_not_exists);
         }
     }
     
@@ -69,8 +70,9 @@ class Schema {
         }
         elseif ($type == 'timestamps')
         {
-            self::add_column($table, 'created_at', 'datetime');
-            self::add_column($table, 'updated_at', 'datetime');
+            // Updated in version 0.3.0 to remove _at prefix on timestamp columns
+            self::add_column($table, 'created', 'datetime');
+            self::add_column($table, 'updated', 'datetime');
             
             return;
         }
@@ -244,8 +246,9 @@ class Schema_Table_Definition {
     }
     
     public function timestamps($options = array()) {
-        $this->datetime('created_at', $options);
-        $this->datetime('updated_at', $options);
+        // Updated in version 0.3.0 to remove _at prefix on timestamp columns
+        $this->datetime('created', $options);
+        $this->datetime('updated', $options);
     }
     
     /* --------------------------------------------------------------
