@@ -1,3 +1,0 @@
-[submodule "tests/support/inferno"]
-	path = tests/support/inferno
-	url = git@github.com:jamierumbelow/inferno.git
