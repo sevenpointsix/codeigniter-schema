@@ -5,7 +5,7 @@
  * Expressive table definitions
  *
  * @author 		Jamie Rumbelow <http://jamierumbelow.net>
- * @version		0.2.0
+ * @version		0.3.0 Extended from 0.2.0 by sevenpointsix
  * @copyright 	(c)2011 Jamie Rumbelow
  */
  

@@ -5,7 +5,7 @@
  * Expressive table definitions
  *
  * @author 		Jamie Rumbelow <http://jamierumbelow.net>
- * @version		0.2.0
+ * @version		0.3.0 Extended from 0.2.0 by sevenpointsix
  * @copyright 	(c)2011 Jamie Rumbelow
  */
 
@@ -32,7 +32,10 @@ class Schema {
 		'date' 		=> 'DATE', 
 		'datetime' 	=> 'DATETIME', 
 		'boolean' 	=> 'TINYINT',
-		'tinyint'	=> 'TINYINT'		
+		'tinyint'	=> 'TINYINT',
+        // Additions for 0.3.0
+        'set'       => 'SET',		
+        'enum'      => 'ENUM'        
 	);
     
     /* --------------------------------------------------------------
@@ -63,6 +66,16 @@ class Schema {
         if (isset(self::$types[strtolower($type)]))
         {
             $column = array( 'type' => self::$types[$type] ); 
+             // Updated in version 0.3.0 to set some default constraints
+            if ($type == 'string' && !isset($options['constraint'])) {
+                $options['constraint'] = 200; // 200 for consistency with the rest of the library
+            }
+            else if (in_array($type, array('enum','set'))) {
+                if (isset($options['constraint']) && is_array($options['constraint'])) {
+                    $options['constraint'] = "'".implode("','", $options['constraint'])."'";
+                    $options['null'] = true;
+                }                    
+            }
         } 
         elseif ($type == 'auto_increment_integer')
         {
@@ -80,7 +93,14 @@ class Schema {
         $ci =& get_instance();
         $ci->load->dbforge();
         
-        $ci->dbforge->add_column($table, array($name => array_merge($column, $options)), $after_column);
+        // Updated in version 0.3.0 to only add new columns
+        if (!$ci->db->query("SHOW COLUMNS FROM $table WHERE Field = ?",array($name))->row()) {
+            $ci->dbforge->add_column($table, array($name => array_merge($column, $options)), $after_column);
+        }
+        else {
+            // Modify the column here? TBC
+        }
+        
     }
     
     static public function remove_column($table, $name) {
@@ -155,7 +175,8 @@ class Schema_Table_Definition {
         return $this->name;
     }
     
-    public function create_table() {
+    // Updated for version 0.3.0 to include the IF_NOT_EXISTS flag
+    public function create_table($if_not_exists = false) {
         $ci =& get_instance();
         $ci->load->dbforge();
         
@@ -165,7 +186,7 @@ class Schema_Table_Definition {
             $ci->dbforge->add_key($key, $primary);
         }
         
-        $ci->dbforge->create_table($this->table_name());
+        $ci->dbforge->create_table($this->table_name(), $if_not_exists);
     }
     
     /* --------------------------------------------------------------
@@ -249,6 +270,19 @@ class Schema_Table_Definition {
         // Updated in version 0.3.0 to remove _at prefix on timestamp columns
         $this->datetime('created', $options);
         $this->datetime('updated', $options);
+    }
+
+    // New definitions for version 0.3.0
+    public function enum($column_name, $options = array()) {
+
+        if (isset($options['constraint']) && is_array($options['constraint'])) {
+            $options['constraint'] = "'".implode("','", $options['constraint'])."'";
+            $options['null'] = true;
+        } 
+
+        $this->add_definition_rule($column_name, array(
+            'type' => 'ENUM'
+        ), $options);
     }
     
     /* --------------------------------------------------------------
