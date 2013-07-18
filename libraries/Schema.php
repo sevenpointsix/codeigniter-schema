@@ -284,6 +284,17 @@ class Schema_Table_Definition {
             'type' => 'ENUM'
         ), $options);
     }
+    public function set($column_name, $options = array()) {
+
+        if (isset($options['constraint']) && is_array($options['constraint'])) {
+            $options['constraint'] = "'".implode("','", $options['constraint'])."'";
+            $options['null'] = true;
+        } 
+
+        $this->add_definition_rule($column_name, array(
+            'type' => 'SET'
+        ), $options);
+    }
     
     /* --------------------------------------------------------------
 	 * MISC API
